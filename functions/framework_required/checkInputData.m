@@ -8,7 +8,7 @@ num_trials = length(input_data.trials_cell);
 
 %% Check necessary items in "trials_cell"
     
-assert(all(cellfun(@(C) isfield(C,'x'),input_data.trials_cell)),'It appears that not all cells in subject_data.trials_cell contain a field "x"');
+assert(all(cellfun(@(C) isfield(C,'x'),input_data.trials_cell)),'It appears that not all cells in input_data.trials_cell contain a field "x"');
 
 %% Check necessary items in "responses"
 if ischar(input_data.responses)
@@ -25,7 +25,7 @@ elseif isempty(input_data.responses)
 else
     
     %%% Compute LLs %%%
-    assert(all(cellfun(@(C) isfield(C,'y'),input_data.responses)),'It appears that not all cells in subject_data.responses contain a field "y"');
+    assert(all(cellfun(@(C) isfield(C,'y'),input_data.responses)),'It appears that not all cells in input_data.responses contain a field "y"');
     
     %%% Fit parameters to the responses? %%%
     if S.fit_settings.num_params > 0
