@@ -68,9 +68,11 @@ options_struct.param_settings.sd = 5;                                       %one
 options_struct.param_settings.slope = [1, 1];                               %two slopes, one for each condition
 
 XXXfitResults_3b = XXXfitModel(input_data,options_struct);                  %The LL with wrong params should be lower than the LL with correct params
-disp('LL with default params: '); disp(XXXfitResults_3b.LL_total);
+disp('LL with wrong params: '); disp(XXXfitResults_3b.LL_total);
 
 %% 4. Fit parameters to the simulated dataset 
+
+options_struct = rmfield(options_struct,'param_settings');                  %Remove the fixed parameter settings that we used above
 
 options_struct.fit_settings.fit_param_names = {'intercept','sd','slope','slope'};                       %The names of the parameters to fit 
 options_struct.fit_settings.fit_param_nrs_per_cond = {[1 2 3],[1 2 4]};     %The first two parameters belong to both conditions, whereas param 3 is for cond 1 and param 4 for cond 2.
@@ -89,7 +91,13 @@ options_struct.model_settings.use_t_distribution = false;                   %Def
 
 XXXfitResults_4b = XXXfitModel(input_data,options_struct);                  %In this case the normal distribution works better, because the errors are perfectly normally distributed without outliers
 
-%% Compare to standard regression with Matlab's "fitlm" function
+%Do not fit the sd as a free parameter
+options_struct.fit_settings.fit_param_names = {'intercept','slope','slope'};                       %The names of the parameters to fit 
+options_struct.fit_settings.fit_param_nrs_per_cond = {[1 2],[1 3]};         %The first parameter belongs to both conditions, whereas param 2 is for cond 1 and param 3 for cond 2.
+
+XXXfitResults_4c = XXXfitModel(input_data,options_struct);                  %The result is very similar to 4b, because the maximum likelihood for intercept and slope leads to a RMSE that is identical to the optimal sd. 
+
+%% 5. Compare to standard regression with Matlab's "fitlm" function
 
 x_all = cellfun(@(x) x.x,trials_cell);
 x_cond1 = reshape(repmat(x_all(trl_cond_nrs == 1),[1 2])',[num_trials 1]);
@@ -103,8 +111,26 @@ y_cond1 = reshape(y_all(trl_cond_nrs == 1,:)',[num_trials 1]);
 y_cond2 = reshape(y_all(trl_cond_nrs == 2,:)',[num_trials 1]);
 
 fitlm_fitResults = fitlm([x_cond1 x_cond2],[y_cond1; y_cond2]); 
-disp(fitlm_fitResults);                                                     %Results should be very similar to "XXXfitResults_4b" (n.b. RMSE here has the same meaning as "sd" above)
+disp(fitlm_fitResults);                                                     %Results should be very similar to 4b and 4c (n.b. RMSE here has the same meaning as "sd" above)
 
 disp('LL with t-distribution: '); disp(XXXfitResults_4a.fit.prob.logLikelihood);
-disp('LL with normal distribution: '); disp(XXXfitResults_4b.fit.prob.logLikelihood);
-disp('LL with fitlm: '); disp(fitlm_fitResults.LogLikelihood);
+disp('LL with normal distribution and free sd: '); disp(XXXfitResults_4b.fit.prob.logLikelihood);
+disp('LL with normal distribution and RMSE as sd: '); disp(XXXfitResults_4c.fit.prob.logLikelihood);
+disp('LL with fitlm: '); disp(fitlm_fitResults.LogLikelihood);              %The likelihoods also correspond
+
+
+%% 6. Do a model comparison to see whether the slopes are significantly different
+
+input_data.trl_cond_nrs(:) = 1;                                             %Assign condition number 1 to all trials (i.e. no more condition 2)    
+
+options_struct.fit_settings.fit_param_names = {'intercept','slope'};        %Only fit one slope parameter
+options_struct.fit_settings.fit_param_nrs_per_cond = {[1 2]};               %Both parameters belong to the one and only condition    
+
+XXXfitResults_6 = XXXfitModel(input_data,options_struct);                   
+disp('LL with only one slope param: '); disp(XXXfitResults_6.fit.prob.logLikelihood);
+
+%Perform a likelihood ratio test using the chi square distribution
+chi_stat = -2*(XXXfitResults_6.fit.prob.logLikelihood-XXXfitResults_4c.fit.prob.logLikelihood);
+df = 1;
+p = chi2cdf(chi_stat,df,'upper'); 
+disp('Likelihood ratio test for differences between slopes: '); disp(['p = ' num2str(p)]);
