@@ -223,7 +223,6 @@ else
             disp(''); disp(['Fitted parameter values for condition ' num2str(c) ':']); disp(fitted_params_cond);
         end
         
-        
         %Generate (and optionally plot) model predictions using the fitted parameters
         if S.fit_settings.gen_predictions
             fitResults.predictions = genPredictionsAllTrials(fitResults,fitResults.fit.fittedParams);
