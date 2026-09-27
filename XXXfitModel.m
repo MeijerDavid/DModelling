@@ -11,7 +11,7 @@ function XXXfitResults = XXXfitModel(input_data,options_struct)
 % Affiliation: Acoustics Research Institute, Austrian Academy of Sciences
 % Communication: MeijerDavid1@gmail.com
 %
-% Version: 03-11-2023
+% Version: 27-09-2026
 
 %% Add "functions" folder and its subfolders to the Matlab path
 

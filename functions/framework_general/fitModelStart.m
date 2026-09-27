@@ -90,7 +90,7 @@ function fitResults = fitModelStart(input_data,options_struct)
 % Communication: MeijerDavid1@gmail.com
 %
 %
-% Version: 02-11-2023 
+% Version: 27-09-2026 
 
 
 %% Assess input arguments
@@ -145,13 +145,12 @@ else
     assert(isstruct(options_struct),'The 2nd input argument "options_struct" must be a structure whose fields describe non-default settings');
 end
 
-%Evaluate 'options_struct' and set default settings
-S = setOptions(options_struct);
-
 %Initialize output structure
 fitResults = [];
 fitResults.data = input_data;
-fitResults.settings = S;
+
+%Evaluate 'options_struct' and set default settings
+fitResults.settings = setOptions(options_struct);
 
 %Model-specific checks on the input data
 fitResults = checkInputData(fitResults);
@@ -162,17 +161,17 @@ fitResults.rng_seed = rng;                            %Save the seed
 
 %% Perform the action!
 
-if ischar(input_data.responses) || isempty(input_data.responses)
+if ischar(fitResults.data.responses) || isempty(fitResults.data.responses)
 	
     assert(fitResults.settings.fit_settings.num_params == 0,'Cannot fit parameters without input_data.responses in the input argument');
     
     %Generate gen_N_resp input_data.responses for a hypothetical observer    
-    if ischar(input_data.responses)
+    if ischar(fitResults.data.responses)
         fitResults.generated_responses = genRespAllTrials(gen_N_resp,fitResults); 
     
     else
         %Generate (and optionally plot) model predictions using the given/default parameters 
-        if S.fit_settings.gen_predictions
+        if fitResults.settings.fit_settings.gen_predictions
             fitResults.predictions = genPredictionsAllTrials(fitResults);
         else
             warning('There are no responses to fit and "fit_settings.gen_predictions" is false, so the program does nothing');
@@ -182,7 +181,7 @@ if ischar(input_data.responses) || isempty(input_data.responses)
 else
     
     %Relevant responses are present, but no parameters are requested to be fitted
-    if S.fit_settings.num_params == 0
+    if fitResults.settings.fit_settings.num_params == 0
         
         %Compute a vector of log-likelihood values: one per response (using the given/fixed parameter values)   
         params = [];
@@ -190,7 +189,7 @@ else
         fitResults.LL_total = sum(fitResults.LL_trials);
         
         %Generate (and optionally plot) model predictions using the given/default parameters 
-        if S.fit_settings.gen_predictions
+        if fitResults.settings.fit_settings.gen_predictions
             fitResults.predictions = genPredictionsAllTrials(fitResults);
         end
         
@@ -224,7 +223,7 @@ else
         end
         
         %Generate (and optionally plot) model predictions using the fitted parameters
-        if S.fit_settings.gen_predictions
+        if fitResults.settings.fit_settings.gen_predictions
             fitResults.predictions = genPredictionsAllTrials(fitResults,fitResults.fit.fittedParams);
         end
     end
