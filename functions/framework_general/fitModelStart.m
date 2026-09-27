@@ -154,7 +154,7 @@ fitResults.data = input_data;
 fitResults.settings = S;
 
 %Model-specific checks on the input data
-checkInputData(fitResults);
+fitResults = checkInputData(fitResults);
 
 %Shuffle the random number generator and set it to the faster algorithm
 rng('shuffle','simdTwister'); 

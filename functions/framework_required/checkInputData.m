@@ -1,4 +1,4 @@
-function checkInputData(fitResults)
+function fitResults = checkInputData(fitResults)
 %Do some model-specific checks on the input_data and model settings S
 
 input_data = fitResults.data;
